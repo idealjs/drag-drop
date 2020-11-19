@@ -100,27 +100,55 @@ var DROP_LISTENABLE_EVENT;
 (function (DROP_LISTENABLE_EVENT) {
     DROP_LISTENABLE_EVENT["DROP"] = "DROP";
     DROP_LISTENABLE_EVENT["MOVE"] = "MOVE";
+    DROP_LISTENABLE_EVENT["LEAVE"] = "LEAVE";
 })(DROP_LISTENABLE_EVENT || (DROP_LISTENABLE_EVENT = {}));
 class DropListenable extends EventEmitter {
     constructor(ele, dnd) {
         super();
+        this.clientPosition = null;
         this.dnd = dnd;
         this.ele = ele;
         this.onMouseDown = this.onMouseDown.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseLeave = this.onMouseLeave.bind(this);
         ele.addEventListener("mouseup", this.onMouseUp);
         ele.addEventListener("mousemove", this.onMouseMove);
+        ele.addEventListener("mouseleave", this.onMouseLeave);
     }
     onMouseDown() { }
     onMouseUp(event) {
         if (this.dnd.isDragging()) {
-            this.emit(DROP_LISTENABLE_EVENT.DROP);
+            this.clientPosition = {
+                x: event.clientX,
+                y: event.clientY,
+            };
+            this.emit(DROP_LISTENABLE_EVENT.DROP, {
+                clientPosition: this.clientPosition,
+            });
+            this.clientPosition = null;
         }
     }
-    onMouseMove() {
+    onMouseMove(event) {
         if (this.dnd.isDragging()) {
-            this.emit(DROP_LISTENABLE_EVENT.MOVE);
+            this.clientPosition = {
+                x: event.clientX,
+                y: event.clientY,
+            };
+            this.emit(DROP_LISTENABLE_EVENT.MOVE, {
+                clientPosition: this.clientPosition,
+            });
+        }
+    }
+    onMouseLeave(event) {
+        if (this.dnd.isDragging()) {
+            this.clientPosition = {
+                x: event.clientX,
+                y: event.clientY,
+            };
+            this.emit(DROP_LISTENABLE_EVENT.LEAVE, {
+                clientPosition: this.clientPosition,
+            });
         }
     }
 }
@@ -128,6 +156,7 @@ export var DND_EVENT;
 (function (DND_EVENT) {
     DND_EVENT["DROP"] = "DND_EVENT/DROP";
     DND_EVENT["DROP_MOVE"] = "DND_EVENT/DROP_MOVE";
+    DND_EVENT["DRAG_LEAVE"] = "DND_EVENT/DRAG_LEAVE";
     DND_EVENT["DRAG_MOVE"] = "DND_EVENT/DRAG_MOVE";
     DND_EVENT["DRAG_START"] = "DND_EVENT/DRAG_START";
     DND_EVENT["DRAG_END"] = "DND_EVENT/DRAG_END";
@@ -147,6 +176,7 @@ class Dnd extends EventEmitter {
             listenable.emit(DND_EVENT.DRAG_START, data);
         });
         listenable.on(DRAG_LISTENABLE_EVENT.DRAG_END, (data) => {
+            console.log("test test", DRAG_LISTENABLE_EVENT.DRAG_END);
             listenable.emit(DND_EVENT.DRAG_END, data);
         });
         listenable.on(DRAG_LISTENABLE_EVENT.MOVE, (data) => {
@@ -156,17 +186,14 @@ class Dnd extends EventEmitter {
     }
     droppable(ele) {
         const listenable = new DropListenable(ele, this);
-        listenable.on(DROP_LISTENABLE_EVENT.DROP, () => {
-            listenable.emit(DND_EVENT.DROP, {
-                item: this.draggingItem,
-                ele: this.draggingEle,
-            });
+        listenable.on(DROP_LISTENABLE_EVENT.DROP, (data) => {
+            listenable.emit(DND_EVENT.DROP, Object.assign(Object.assign({}, data), { item: this.draggingItem, ele: this.draggingEle }));
         });
-        listenable.on(DROP_LISTENABLE_EVENT.MOVE, () => {
-            listenable.emit(DND_EVENT.DROP_MOVE, {
-                item: this.draggingItem,
-                ele: this.draggingEle,
-            });
+        listenable.on(DROP_LISTENABLE_EVENT.MOVE, (data) => {
+            listenable.emit(DND_EVENT.DROP_MOVE, Object.assign(Object.assign({}, data), { item: this.draggingItem, ele: this.draggingEle }));
+        });
+        listenable.on(DROP_LISTENABLE_EVENT.LEAVE, (data) => {
+            listenable.emit(DND_EVENT.DRAG_LEAVE, Object.assign(Object.assign({}, data), { item: this.draggingItem, ele: this.draggingEle }));
         });
         return listenable;
     }

@@ -20,14 +20,17 @@ declare class DragListenable<T extends Element, I extends IDragItem> extends Eve
 declare class DropListenable<T extends Element> extends EventEmitter {
     private dnd;
     private ele;
+    private clientPosition;
     constructor(ele: T, dnd: Dnd);
     onMouseDown(): void;
-    onMouseUp(event: Event): void;
-    onMouseMove(): void;
+    onMouseUp(event: MouseEvent): void;
+    onMouseMove(event: MouseEvent): void;
+    onMouseLeave(event: MouseEvent): void;
 }
 export declare enum DND_EVENT {
     DROP = "DND_EVENT/DROP",
     DROP_MOVE = "DND_EVENT/DROP_MOVE",
+    DRAG_LEAVE = "DND_EVENT/DRAG_LEAVE",
     DRAG_MOVE = "DND_EVENT/DRAG_MOVE",
     DRAG_START = "DND_EVENT/DRAG_START",
     DRAG_END = "DND_EVENT/DRAG_END"
