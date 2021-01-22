@@ -10,7 +10,6 @@
     ],
     "dependencies": {},
     "scripts": {
-        "build": "rm -rf dist | tsc",
         "build:webpack": "webpack"
     },
     "eslintConfig": {
