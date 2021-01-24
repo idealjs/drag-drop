@@ -26,7 +26,16 @@ class Dnd extends EventEmitter {
     private dragging = false;
     private draggingEle: Element | null = null;
     private draggingItem: IDragItem | null = null;
-
+    private previewCanvas: HTMLCanvasElement | null = null;
+    public setPreviewCanvas(ele: HTMLCanvasElement | null) {
+        if (ele == null) {
+            this.previewCanvas?.remove();
+            this.previewCanvas = null;
+        } else {
+            document.getElementById("root")?.appendChild(ele);
+            this.previewCanvas = ele;
+        }
+    }
     draggable<T extends Element, I extends IDragItem>(ele: T, item?: I) {
         const listenable = new DragListenable(this, ele, item);
 
@@ -86,8 +95,8 @@ class Dnd extends EventEmitter {
         this.draggingEle = ele;
     }
 
-    getDraggingItem(){
-        return this.draggingItem
+    getDraggingItem() {
+        return this.draggingItem;
     }
 
     setDraggingItem<I extends IDragItem>(item: I | null) {

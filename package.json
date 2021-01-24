@@ -1,6 +1,6 @@
 {
     "name": "@idealjs/drag-drop",
-    "version": "1.1.0-alpha",
+    "version": "1.2.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -8,7 +8,9 @@
         "package.json",
         "README.md"
     ],
-    "dependencies": {},
+    "dependencies": {
+        "html2canvas": "^1.0.0-rc.7"
+    },
     "scripts": {
         "build:webpack": "webpack",
         "test": "react-scripts test"
@@ -51,8 +53,6 @@
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
         "eslint-plugin-simple-import-sort": "7.0.0",
-        "react": "^17.0.1",
-        "react-dom": "^17.0.1",
         "react-scripts": "4.0.1",
         "react-test-renderer": "^17.0.1",
         "ts-loader": "^8.0.14",

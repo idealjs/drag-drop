@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import html2canvas from "html2canvas";
 
 import Dnd from "./Dnd";
 
@@ -16,19 +17,22 @@ export enum DRAG_LISTENABLE_EVENT {
 
 class DragListenable<
     T extends Element,
+    P extends HTMLElement,
     I extends IDragItem
 > extends EventEmitter {
     private dnd: Dnd;
     private dragStartEmitted = false;
     private ele: T;
+    private previewEle: P | null = null;
+    private previewCanvas: HTMLCanvasElement | null = null;
     private item: I | null = null;
     private source: {
-        screenX: number;
-        screenY: number;
+        clientX: number;
+        clientY: number;
     } | null = null;
     private prevPoint: {
-        screenX: number;
-        screenY: number;
+        clientX: number;
+        clientY: number;
     } | null = null;
     private offset: {
         x: number;
@@ -48,6 +52,9 @@ class DragListenable<
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
         ele.addEventListener("mousedown", this.onMouseDown as EventListener);
+        if (ele instanceof HTMLElement) {
+            ele.style.userSelect = "none";
+        }
     }
 
     private onMouseDown(event: MouseEvent) {
@@ -56,12 +63,12 @@ class DragListenable<
         this.dnd.setDraggingEle(this.ele);
         this.dnd.setDraggingItem(this.item);
         this.source = {
-            screenX: event.screenX,
-            screenY: event.screenY,
+            clientX: event.clientX,
+            clientY: event.clientY,
         };
         this.prevPoint = {
-            screenX: event.screenX,
-            screenY: event.screenY,
+            clientX: event.clientX,
+            clientY: event.clientY,
         };
         this.offset = {
             x: 0,
@@ -86,6 +93,7 @@ class DragListenable<
         this.dnd.setDragging(false);
         this.dnd.setDraggingEle(null);
         this.dnd.setDraggingItem(null);
+        this.dnd.setPreviewCanvas(null);
         this.source = null;
         this.offset = null;
         this.vector = null;
@@ -102,12 +110,22 @@ class DragListenable<
             });
             this.dnd.setDragging(true);
             this.dragStartEmitted = true;
+            if (this.previewEle != null) {
+                html2canvas(this.previewEle).then((canvas) => {
+                    canvas.style.position = "absolute";
+                    this.previewCanvas = canvas;
+                    this.dnd.setPreviewCanvas(canvas);
+                });
+            }
+        }
+        if (this.previewCanvas != null) {
+            this.previewCanvas.style.top = `${event.clientY}px`;
+            this.previewCanvas.style.left = `${event.clientX}px`;
         }
         this.vector = this.vectorFromEvent(event);
-
         this.prevPoint = {
-            screenX: event.screenX,
-            screenY: event.screenY,
+            clientX: event.clientX,
+            clientY: event.clientY,
         };
         this.offset = this.offsetFromEvent(event);
         this.emit(DRAG_LISTENABLE_EVENT.DRAG, {
@@ -120,23 +138,27 @@ class DragListenable<
     private offsetFromEvent(event: MouseEvent) {
         return {
             x:
-                event.screenX -
-                (this.source?.screenX != null ? this.source?.screenX : 0),
+                event.clientX -
+                (this.source?.clientX != null ? this.source?.clientX : 0),
             y:
-                event.screenY -
-                (this.source?.screenY != null ? this.source?.screenY : 0),
+                event.clientY -
+                (this.source?.clientY != null ? this.source?.clientY : 0),
         };
     }
 
     private vectorFromEvent(event: MouseEvent) {
         return {
-            x: (this.prevPoint?.screenX != null
-                ? Math.sign(this.prevPoint?.screenX - event.screenX)
+            x: (this.prevPoint?.clientX != null
+                ? Math.sign(this.prevPoint?.clientX - event.clientX)
                 : 0) as VECTOR,
-            y: (this.prevPoint?.screenY != null
-                ? Math.sign(this.prevPoint?.screenY - event.screenY)
+            y: (this.prevPoint?.clientY != null
+                ? Math.sign(this.prevPoint?.clientY - event.clientY)
                 : 0) as VECTOR,
         };
+    }
+
+    public setPreviewEle(ele: P) {
+        this.previewEle = ele;
     }
 }
 

@@ -1,14 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DND_EVENT, useDnd } from "@idealjs/drag-drop";
 
 const Test = () => {
     const dnd = useDnd();
-
+    const [counter, setCounter] = useState(0);
     useEffect(() => {
-        dnd.draggable(ref.current!, {
-            id: "Test",
-        })
+        const listener = dnd
+            .draggable(ref.current!, {
+                id: "Test",
+            })
             .addListener(DND_EVENT.DRAG_START, (data) => {
                 console.log("test test drag start", data);
             })
@@ -18,9 +19,18 @@ const Test = () => {
             .addListener(DND_EVENT.DRAG, (data) => {
                 console.log("test test drag move", data);
             });
-
+        listener.setPreviewEle(ref.current!);
         return () => {};
     }, [dnd]);
+
+    useEffect(() => {
+        const handler = setInterval(() => {
+            setCounter((s) => s + 1);
+        }, 1000);
+        return () => {
+            clearInterval(handler);
+        };
+    }, []);
 
     const ref = useRef<HTMLDivElement>(null);
 
@@ -30,9 +40,12 @@ const Test = () => {
             style={{
                 height: "100px",
                 width: "100px",
-                backgroundColor: "black",
+                backgroundColor: "white",
+                userSelect: "none",
             }}
-        ></div>
+        >
+            {counter}
+        </div>
     );
 };
 
