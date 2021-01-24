@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-import Dnd from "./dnd";
+import Dnd from "./Dnd";
 
 export const DndContext = createContext(new Dnd());
 

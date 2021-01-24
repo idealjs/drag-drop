@@ -1,6 +1,6 @@
 {
     "name": "@idealjs/drag-drop",
-    "version": "1.0.0-alpha",
+    "version": "1.1.0-alpha",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -10,7 +10,8 @@
     ],
     "dependencies": {},
     "scripts": {
-        "build:webpack": "webpack"
+        "build:webpack": "webpack",
+        "test": "react-scripts test"
     },
     "eslintConfig": {
         "extends": [
@@ -44,6 +45,8 @@
         ]
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^5.11.9",
+        "@testing-library/react": "^11.2.3",
         "@types/node": "^14.14.22",
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",
@@ -51,12 +54,13 @@
         "react": "^17.0.1",
         "react-dom": "^17.0.1",
         "react-scripts": "4.0.1",
+        "react-test-renderer": "^17.0.1",
         "ts-loader": "^8.0.14",
         "typescript": "^4.1.3",
         "webpack-cli": "^4.4.0"
     },
     "peerDependencies": {
-        "react": "^17.0.1",
-        "react-dom": "^17.0.1"
+        "react": ">=16.8.0",
+        "react-dom": ">=16.8.0"
     }
 }

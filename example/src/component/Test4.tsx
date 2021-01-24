@@ -15,7 +15,7 @@ const Test4 = () => {
             .addListener(DND_EVENT.DRAG_END, (data) => {
                 console.log("test test drag end", data);
             })
-            .addListener(DND_EVENT.DRAG_MOVE, (data) => {
+            .addListener(DND_EVENT.DRAG, (data) => {
                 console.log("test test drag move", data);
             });
 
