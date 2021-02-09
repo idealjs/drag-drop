@@ -2,8 +2,10 @@ import EventEmitter from "events";
 import html2canvas from "html2canvas";
 
 import Dnd from "./Dnd";
-
-type VECTOR = 1 | -1 | 0;
+import isHTMLElement from "./isHTMLElement";
+import offsetFromEvent from "./offsetFromEvent";
+import { VECTOR } from "./type";
+import vectorFromEvent from "./vectorFromEvent";
 
 export interface IDragItem {
     id: string;
@@ -16,14 +18,13 @@ export enum DRAG_LISTENABLE_EVENT {
 }
 
 class DragListenable<
-    T extends Element,
-    P extends HTMLElement,
+    E extends Element,
     I extends IDragItem
 > extends EventEmitter {
     private dnd: Dnd;
     private dragStartEmitted = false;
-    private ele: T;
-    private previewEle: P | null = null;
+    private el: E;
+    private previewEle: HTMLElement | null = null;
     private previewCanvas: HTMLCanvasElement | null = null;
     private item: I | null = null;
     private source: {
@@ -43,24 +44,39 @@ class DragListenable<
         y: VECTOR;
     } | null = null;
 
-    constructor(dnd: Dnd, ele: T, item?: I) {
+    constructor(dnd: Dnd, el: E, crossWindow: boolean, options?: { item?: I }) {
         super();
         this.dnd = dnd;
-        this.ele = ele;
-        this.item = item != null ? item : null;
+        this.el = el;
+        this.item = options?.item != null ? options.item : null;
         this.onMouseDown = this.onMouseDown.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
-        ele.addEventListener("mousedown", this.onMouseDown as EventListener);
-        if (ele instanceof HTMLElement) {
-            ele.style.userSelect = "none";
+        this.onDragStart = this.onDragStart.bind(this);
+        this.onDrag = this.onDrag.bind(this);
+        this.onDragEnd = this.onDragEnd.bind(this);
+        if (crossWindow) {
+            if (isHTMLElement(this.el)) {
+                this.el.addEventListener("dragstart", this.onDragStart);
+                this.el.draggable = true;
+            } else {
+                throw new Error(`Can't add drag to ${this.el}`);
+            }
+        } else {
+            this.el.addEventListener(
+                "mousedown",
+                this.onMouseDown as EventListener
+            );
+        }
+
+        if (el instanceof HTMLElement) {
+            el.style.userSelect = "none";
         }
     }
 
     private onMouseDown(event: MouseEvent) {
         this.dragStartEmitted = false;
         this.dnd.setDragging(false);
-        this.dnd.setDraggingEle(this.ele);
         this.dnd.setDraggingItem(this.item);
         this.source = {
             clientX: event.clientX,
@@ -90,13 +106,9 @@ class DragListenable<
         });
 
         this.dragStartEmitted = false;
-        this.dnd.setDragging(false);
-        this.dnd.setDraggingEle(null);
-        this.dnd.setDraggingItem(null);
-        this.dnd.setPreviewCanvas(null);
-        this.source = null;
-        this.offset = null;
-        this.vector = null;
+
+        this.clean();
+
         window.removeEventListener("mousemove", this.onMouseMove);
         window.removeEventListener("mouseup", this.onMouseUp);
     }
@@ -113,6 +125,7 @@ class DragListenable<
             if (this.previewEle != null) {
                 html2canvas(this.previewEle).then((canvas) => {
                     canvas.style.position = "absolute";
+                    canvas.style.pointerEvents = "none";
                     this.previewCanvas = canvas;
                     this.dnd.setPreviewCanvas(canvas);
                 });
@@ -122,12 +135,12 @@ class DragListenable<
             this.previewCanvas.style.top = `${event.clientY}px`;
             this.previewCanvas.style.left = `${event.clientX}px`;
         }
-        this.vector = this.vectorFromEvent(event);
+        this.vector = vectorFromEvent(event, this.prevPoint);
         this.prevPoint = {
             clientX: event.clientX,
             clientY: event.clientY,
         };
-        this.offset = this.offsetFromEvent(event);
+        this.offset = offsetFromEvent(event, this.source);
         this.emit(DRAG_LISTENABLE_EVENT.DRAG, {
             source: this.source,
             offset: this.offset,
@@ -135,30 +148,91 @@ class DragListenable<
         });
     }
 
-    private offsetFromEvent(event: MouseEvent) {
-        return {
-            x:
-                event.clientX -
-                (this.source?.clientX != null ? this.source?.clientX : 0),
-            y:
-                event.clientY -
-                (this.source?.clientY != null ? this.source?.clientY : 0),
-        };
+    private async onDragStart(e: DragEvent) {
+        this.dragStartEmitted = true;
+        if (this.previewEle) {
+            try {
+                e.dataTransfer?.setDragImage(
+                    await html2canvas(this.previewEle),
+                    e.offsetX,
+                    e.offsetY
+                );
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            e.dataTransfer?.setDragImage(
+                document.createElement("div"),
+                e.offsetX,
+                e.offsetY
+            );
+        }
+        this.emit(DRAG_LISTENABLE_EVENT.DRAG_START, {
+            source: this.source,
+            offset: this.offset,
+            vector: this.vector,
+        });
+
+        this.dnd.setDragging(true);
+        this.dnd.setDraggingItem(this.item);
+
+        e.dataTransfer?.setData(
+            "text/plain",
+            JSON.stringify({
+                item: this.dnd.getDraggingItem(),
+            })
+        );
+
+        if (isHTMLElement(this.el)) {
+            this.el.addEventListener("drag", this.onDrag);
+            this.el.addEventListener("dragend", this.onDragEnd);
+        } else {
+            throw new Error(`Can't add drag to ${this.el}`);
+        }
     }
 
-    private vectorFromEvent(event: MouseEvent) {
-        return {
-            x: (this.prevPoint?.clientX != null
-                ? Math.sign(this.prevPoint?.clientX - event.clientX)
-                : 0) as VECTOR,
-            y: (this.prevPoint?.clientY != null
-                ? Math.sign(this.prevPoint?.clientY - event.clientY)
-                : 0) as VECTOR,
+    private onDrag(event: DragEvent) {
+        this.vector = vectorFromEvent(event, this.prevPoint);
+        this.prevPoint = {
+            clientX: event.clientX,
+            clientY: event.clientY,
         };
+        this.offset = offsetFromEvent(event, this.source);
+        this.emit(DRAG_LISTENABLE_EVENT.DRAG, {
+            source: this.source,
+            offset: this.offset,
+            vector: this.vector,
+        });
     }
 
-    public setPreviewEle(ele: P) {
-        this.previewEle = ele;
+    private onDragEnd() {
+        this.emit(DRAG_LISTENABLE_EVENT.DRAG_END, {
+            source: this.source,
+            offset: this.offset,
+            vector: this.vector,
+        });
+
+        this.clean();
+
+        if (isHTMLElement(this.el)) {
+            this.el.removeEventListener("drag", this.onDrag);
+            this.el.removeEventListener("dragend", this.onDragEnd);
+        } else {
+            throw new Error(`Can't add drag to ${this.el}`);
+        }
+    }
+
+    public setPreviewEle(el: HTMLElement) {
+        this.previewEle = el;
+    }
+
+    private clean() {
+        this.dnd.setDragging(false);
+        this.dnd.setDraggingItem(null);
+        this.dnd.setPreviewCanvas(null);
+        this.source = null;
+        this.offset = null;
+        this.vector = null;
     }
 }
 

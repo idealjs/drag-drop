@@ -9,6 +9,7 @@ const Test3 = () => {
         dnd.droppable(ref.current!)
             .addListener(DND_EVENT.DROP, (data) => {
                 console.log("test test drop", data);
+                alert(data);
             })
             .addListener(DND_EVENT.DRAG_OVER, (data) => {
                 console.log("test test dropmove", data);

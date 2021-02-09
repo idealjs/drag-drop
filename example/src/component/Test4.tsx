@@ -6,8 +6,10 @@ const Test4 = () => {
     const dnd = useDnd();
 
     useEffect(() => {
-        dnd.draggable(ref.current!, {
-            id: "Test",
+        dnd.draggable(ref.current!, true, {
+            item: {
+                id: "Test",
+            },
         })
             .addListener(DND_EVENT.DRAG_START, (data) => {
                 console.log("test test drag start", data);
@@ -18,7 +20,6 @@ const Test4 = () => {
             .addListener(DND_EVENT.DRAG, (data) => {
                 console.log("test test drag move", data);
             });
-
         return () => {};
     }, [dnd]);
 

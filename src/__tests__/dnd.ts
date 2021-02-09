@@ -11,9 +11,10 @@ it("dnd test", () => {
     dropElement.setAttribute("id", "dropElement");
 
     const dnd = new Dnd();
-    const dragListener = dnd.draggable(dragElement, { id: "testDrag" });
+    const dragListener = dnd.draggable(dragElement, false, {
+        item: { id: "testDrag" },
+    });
     const dropListener = dnd.droppable(dropElement);
 
-    expect(dnd.getDraggingEle()).toEqual(dragElement);
     expect(onSpy).toBeCalledTimes(1);
 });

@@ -20,11 +20,9 @@ class Dnd extends EventEmitter {
     constructor() {
         super();
         this.setDragging = this.setDragging.bind(this);
-        this.setDraggingEle = this.setDraggingEle.bind(this);
     }
 
     private dragging = false;
-    private draggingEle: Element | null = null;
     private draggingItem: IDragItem | null = null;
     private previewCanvas: HTMLCanvasElement | null = null;
     public setPreviewCanvas(ele: HTMLCanvasElement | null) {
@@ -36,8 +34,14 @@ class Dnd extends EventEmitter {
             this.previewCanvas = ele;
         }
     }
-    draggable<T extends Element, I extends IDragItem>(ele: T, item?: I) {
-        const listenable = new DragListenable(this, ele, item);
+    draggable<T extends Element, I extends IDragItem>(
+        ele: T,
+        crossWindow: boolean = false,
+        option?: {
+            item?: I;
+        }
+    ) {
+        const listenable = new DragListenable(this, ele, crossWindow, option);
 
         listenable.on(DRAG_LISTENABLE_EVENT.DRAG_START, (data) => {
             listenable.emit(DND_EVENT.DRAG_START, data);
@@ -54,13 +58,12 @@ class Dnd extends EventEmitter {
         return listenable;
     }
 
-    droppable<T extends Element>(ele: T) {
-        const listenable = new DropListenable(ele, this);
+    droppable<T extends Element>(ele: T, crossWindow: boolean = false) {
+        const listenable = new DropListenable(this, ele, crossWindow);
         listenable.on(DROP_LISTENABLE_EVENT.DROP, (data) => {
             listenable.emit(DND_EVENT.DROP, {
-                ...data,
                 item: this.draggingItem,
-                ele: this.draggingEle,
+                ...data,
             });
         });
 
@@ -68,7 +71,6 @@ class Dnd extends EventEmitter {
             listenable.emit(DND_EVENT.DRAG_OVER, {
                 ...data,
                 item: this.draggingItem,
-                ele: this.draggingEle,
             });
         });
 
@@ -76,7 +78,6 @@ class Dnd extends EventEmitter {
             listenable.emit(DND_EVENT.DRAG_LEAVE, {
                 ...data,
                 item: this.draggingItem,
-                ele: this.draggingEle,
             });
         });
 
@@ -85,14 +86,6 @@ class Dnd extends EventEmitter {
 
     setDragging(dragging: boolean) {
         this.dragging = dragging;
-    }
-
-    getDraggingEle() {
-        return this.draggingEle;
-    }
-
-    setDraggingEle<T extends Element>(ele: T | null) {
-        this.draggingEle = ele;
     }
 
     getDraggingItem() {

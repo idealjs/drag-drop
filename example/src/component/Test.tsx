@@ -7,8 +7,8 @@ const Test = () => {
     const [counter, setCounter] = useState(0);
     useEffect(() => {
         const listener = dnd
-            .draggable(ref.current!, {
-                id: "Test",
+            .draggable(ref.current!, false, {
+                item: { id: "Test" },
             })
             .addListener(DND_EVENT.DRAG_START, (data) => {
                 console.log("test test drag start", data);
