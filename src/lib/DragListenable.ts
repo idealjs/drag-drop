@@ -148,23 +148,23 @@ class DragListenable<
         });
     }
 
-    private async onDragStart(e: DragEvent) {
+    private async onDragStart(event: DragEvent) {
         this.dragStartEmitted = true;
         if (this.previewEle) {
             try {
-                e.dataTransfer?.setDragImage(
+                event.dataTransfer?.setDragImage(
                     await html2canvas(this.previewEle),
-                    e.offsetX,
-                    e.offsetY
+                    event.offsetX,
+                    event.offsetY
                 );
             } catch (error) {
                 console.error(error);
             }
         } else {
-            e.dataTransfer?.setDragImage(
+            event.dataTransfer?.setDragImage(
                 document.createElement("div"),
-                e.offsetX,
-                e.offsetY
+                event.offsetX,
+                event.offsetY
             );
         }
         this.emit(DRAG_LISTENABLE_EVENT.DRAG_START, {
@@ -176,7 +176,7 @@ class DragListenable<
         this.dnd.setDragging(true);
         this.dnd.setDraggingItem(this.item);
 
-        e.dataTransfer?.setData(
+        event.dataTransfer?.setData(
             "text/plain",
             JSON.stringify({
                 item: this.dnd.getDraggingItem(),

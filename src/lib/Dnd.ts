@@ -62,6 +62,7 @@ class Dnd extends EventEmitter {
         const listenable = new DropListenable(this, ele, crossWindow);
         listenable.on(DROP_LISTENABLE_EVENT.DROP, (data) => {
             listenable.emit(DND_EVENT.DROP, {
+                crossWindow,
                 item: this.draggingItem,
                 ...data,
             });
@@ -69,6 +70,7 @@ class Dnd extends EventEmitter {
 
         listenable.on(DROP_LISTENABLE_EVENT.DRAG_OVER, (data) => {
             listenable.emit(DND_EVENT.DRAG_OVER, {
+                crossWindow,
                 item: this.draggingItem,
                 ...data,
             });
@@ -76,6 +78,7 @@ class Dnd extends EventEmitter {
 
         listenable.on(DROP_LISTENABLE_EVENT.DRAG_LEAVE, (data) => {
             listenable.emit(DND_EVENT.DRAG_LEAVE, {
+                crossWindow,
                 item: this.draggingItem,
                 ...data,
             });
