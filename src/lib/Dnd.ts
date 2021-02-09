@@ -69,15 +69,15 @@ class Dnd extends EventEmitter {
 
         listenable.on(DROP_LISTENABLE_EVENT.DRAG_OVER, (data) => {
             listenable.emit(DND_EVENT.DRAG_OVER, {
-                ...data,
                 item: this.draggingItem,
+                ...data,
             });
         });
 
         listenable.on(DROP_LISTENABLE_EVENT.DRAG_LEAVE, (data) => {
             listenable.emit(DND_EVENT.DRAG_LEAVE, {
-                ...data,
                 item: this.draggingItem,
+                ...data,
             });
         });
 
