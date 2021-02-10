@@ -12,13 +12,13 @@ const Test4 = () => {
             },
         })
             .addListener(DND_EVENT.DRAG_START, (data) => {
-                console.log("test test drag start", data);
+                console.debug("[debug] drag start", data);
             })
             .addListener(DND_EVENT.DRAG_END, (data) => {
-                console.log("test test drag end", data);
+                console.debug("[debug] drag end", data);
             })
             .addListener(DND_EVENT.DRAG, (data) => {
-                console.log("test test drag move", data);
+                console.debug("[debug] drag move", data);
             })
             .setPreviewEle(ref.current!);
         return () => {};

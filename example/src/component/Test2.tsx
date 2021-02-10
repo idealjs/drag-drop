@@ -8,10 +8,10 @@ const Test2 = () => {
     useEffect(() => {
         dnd.droppable(ref.current!, true)
             .addListener(DND_EVENT.DROP, (data) => {
-                console.log("test test drop", data);
+                console.debug("[debug] drop", data);
             })
             .addListener(DND_EVENT.DRAG_OVER, (data) => {
-                console.log("test test dropmove", data);
+                console.debug("[debug] drag over", data);
             });
         return () => {};
     }, [dnd]);
