@@ -1,6 +1,6 @@
 {
     "name": "@idealjs/drag-drop",
-    "version": "1.4.0-alpha",
+    "version": "1.4.1-alpha",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [

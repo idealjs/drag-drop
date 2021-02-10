@@ -171,7 +171,7 @@ class DragListenable<
         if (this.previewEle) {
             try {
                 event.dataTransfer?.setDragImage(
-                    await html2canvas(this.previewEle),
+                    this.previewEle,
                     event.offsetX,
                     event.offsetY
                 );
