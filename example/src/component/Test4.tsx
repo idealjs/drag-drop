@@ -19,7 +19,8 @@ const Test4 = () => {
             })
             .addListener(DND_EVENT.DRAG, (data) => {
                 console.log("test test drag move", data);
-            });
+            })
+            .setPreviewEle(ref.current!);
         return () => {};
     }, [dnd]);
 

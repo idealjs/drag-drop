@@ -76,6 +76,7 @@ class DropListenable<E extends Element> extends EventEmitter {
             };
 
             this.emit(DROP_LISTENABLE_EVENT.DRAG_LEAVE, {
+                crossWindow: true,
                 clientPosition: this.clientPosition,
                 item: this.dnd.getDraggingItem(),
             });
@@ -89,22 +90,10 @@ class DropListenable<E extends Element> extends EventEmitter {
             y: event.clientY,
         };
 
-        const dataString = event.dataTransfer?.getData("text/plain");
-        if (dataString != null) {
-            try {
-                console.log(dataString);
-                this.emit(DROP_LISTENABLE_EVENT.DROP, {
-                    clientPosition: this.clientPosition,
-                    ...JSON.parse(dataString),
-                });
-            } catch (error) {
-                this.emit(DROP_LISTENABLE_EVENT.DROP, {
-                    clientPosition: this.clientPosition,
-                    item: this.dnd.getDraggingItem(),
-                });
-                console.debug(error);
-            }
-        }
+        this.emit(DROP_LISTENABLE_EVENT.DRAG_OVER, {
+            clientPosition: this.clientPosition,
+            item: this.dnd.getDraggingItem(),
+        });
     }
 
     private onDragleave(event: DragEvent) {
@@ -113,22 +102,10 @@ class DropListenable<E extends Element> extends EventEmitter {
             y: event.clientY,
         };
 
-        const dataString = event.dataTransfer?.getData("text/plain");
-        if (dataString != null) {
-            try {
-                console.log(dataString);
-                this.emit(DROP_LISTENABLE_EVENT.DROP, {
-                    clientPosition: this.clientPosition,
-                    ...JSON.parse(dataString),
-                });
-            } catch (error) {
-                this.emit(DROP_LISTENABLE_EVENT.DROP, {
-                    clientPosition: this.clientPosition,
-                    item: this.dnd.getDraggingItem(),
-                });
-                console.debug(error);
-            }
-        }
+        this.emit(DROP_LISTENABLE_EVENT.DRAG_LEAVE, {
+            clientPosition: this.clientPosition,
+            item: this.dnd.getDraggingItem(),
+        });
     }
 
     private onDrop(event: DragEvent) {
@@ -137,21 +114,10 @@ class DropListenable<E extends Element> extends EventEmitter {
             y: event.clientY,
         };
 
-        const dataString = event.dataTransfer?.getData("text/plain");
-        if (dataString != null) {
-            try {
-                console.log(dataString);
-                this.emit(DROP_LISTENABLE_EVENT.DROP, {
-                    clientPosition: this.clientPosition,
-                    ...JSON.parse(dataString),
-                });
-            } catch (error) {
-                this.emit(DROP_LISTENABLE_EVENT.DROP, {
-                    clientPosition: this.clientPosition,
-                });
-                console.debug(error);
-            }
-        }
+        this.emit(DROP_LISTENABLE_EVENT.DROP, {
+            clientPosition: this.clientPosition,
+            item: this.dnd.getDraggingItem(),
+        });
 
         this.clientPosition = null;
     }

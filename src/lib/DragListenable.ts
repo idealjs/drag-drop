@@ -149,7 +149,25 @@ class DragListenable<
     }
 
     private async onDragStart(event: DragEvent) {
-        this.dragStartEmitted = true;
+        this.dragStartEmitted = false;
+        this.dnd.setDragging(false);
+        this.dnd.setDraggingItem(this.item);
+        this.source = {
+            clientX: event.clientX,
+            clientY: event.clientY,
+        };
+        this.prevPoint = {
+            clientX: event.clientX,
+            clientY: event.clientY,
+        };
+        this.offset = {
+            x: 0,
+            y: 0,
+        };
+        this.vector = {
+            x: 0,
+            y: 0,
+        };
         if (this.previewEle) {
             try {
                 event.dataTransfer?.setDragImage(
@@ -172,16 +190,6 @@ class DragListenable<
             offset: this.offset,
             vector: this.vector,
         });
-
-        this.dnd.setDragging(true);
-        this.dnd.setDraggingItem(this.item);
-
-        event.dataTransfer?.setData(
-            "text/plain",
-            JSON.stringify({
-                item: this.dnd.getDraggingItem(),
-            })
-        );
 
         if (isHTMLElement(this.el)) {
             this.el.addEventListener("drag", this.onDrag);
