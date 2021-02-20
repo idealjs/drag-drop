@@ -4,6 +4,8 @@ function vectorFromEvent(
     event: MouseEvent,
     prevPoint: { clientX: number; clientY: number } | null
 ) {
+    console.debug("[Info] vectorFromEvent event", event);
+    console.debug("[Info] vectorFromEvent source", prevPoint);
     return {
         x: (prevPoint?.clientX != null
             ? Math.sign(prevPoint?.clientX - event.clientX)
